@@ -360,8 +360,9 @@ def train(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_
                     model.learn(
                         s=i_data['state'].values.tolist(),
                         a=i_data['action'].values.tolist(),
-                        dc_r=i_data['discounted_reward'].values[:,
-                                                                np.newaxis],
+                        r=i_data['reward'].values[:,np.newaxis],
+                        s_=i_data['next_state'].values.tolist(),
+                        dc_r=i_data['discounted_reward'].values[:,np.newaxis],
                         episode=episode,
                         sigma_offset=sigma_offset,
                         old_prob=i_data['old_prob'].values.tolist(),
@@ -387,6 +388,8 @@ def train(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_
         c_loss = np.array([model.get_critic_loss(
             s=data[f'{i}']['state'].values.tolist(),
             a=data[f'{i}']['action'].values.tolist(),
+            r=i_data['reward'].values[:,np.newaxis],
+            s_=i_data['next_state'].values.tolist(),
             dc_r=data[f'{i}']['discounted_reward'].values[:, np.newaxis],
             sigma_offset=sigma_offset
         ) for i in range(agents_num)]).mean()

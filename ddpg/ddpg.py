@@ -129,7 +129,7 @@ class DDPG(object):
             var = tf.get_variable_scope().global_variables()
         return q, var
 
-    def decay_lr(self, episode):
+    def decay_lr(self, episode, **kargs):
         return self.sess.run(self.lr, feed_dict={
             self.episode: episode
         })

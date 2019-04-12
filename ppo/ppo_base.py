@@ -33,31 +33,31 @@ class PPO_SEP(object):
             stair=hyper_config['stair']
         )
 
-    def decay_lr(self, episode):
+    def decay_lr(self, episode, **kargs):
         return self.actor.actor_decay_lr(episode)
 
-    def choose_action(self, state):
+    def choose_action(self, state, **kargs):
         return self.actor.choose_action(state)
 
-    def choose_inference_action(self, state):
+    def choose_inference_action(self, state, **kargs):
         return self.actor.choose_inference_action(state)
 
-    def get_actor_loss(self, s, a, old_prob, advantage):
+    def get_actor_loss(self, s, a, old_prob, advantage, **kargs):
         return self.actor.get_actor_loss(s, a, old_prob, advantage)
 
-    def get_entropy(self, s):
+    def get_entropy(self, s, **kargs):
         return self.actor.get_entropy(s)
 
-    def get_sigma(self, s):
+    def get_sigma(self, s, **kargs):
         return self.actor.get_sigma(s)
 
-    def get_state_value(self, state):
+    def get_state_value(self, state, **kargs):
         return self.critic.get_state_value(state)
 
     def get_critic_loss(self, s, dc_r, **kargs):
         return self.critic.get_critic_loss(s, dc_r)
 
-    def learn(self, s, a, dc_r, old_prob, advantage, episode):
+    def learn(self, s, a, dc_r, old_prob, advantage, episode, **kargs):
         self.actor.learn(s, a, old_prob, advantage, episode)
         self.critic.learn(s, dc_r, episode)
 
@@ -182,31 +182,6 @@ class PPO_SEP(object):
             return self.sess.run(self.decay, feed_dict={
                 self.episode: episode
             })
-            '''
-            调试出现nan的问题
-            '''
-            # print('-----------')
-            # print(self.sess.run(self.old_action_prob, feed_dict={
-            #     self.s : s,
-            #     self.a : a
-            # }))
-            # aa = self.sess.run(self.old_action_prob, feed_dict={
-            #     self.s : s,
-            #     self.a : a
-            # })
-            # bb = self.sess.run(self.new_action_prob, feed_dict={
-            #     self.s : s,
-            #     self.a : a
-            # })
-            # print('--------------------')
-            # print(self.sess.run(self.gradients,{
-            #     self.s : s,
-            #     self.a : a,
-            #     self.advantage : advantage
-            # }))
-            # if(np.isnan(bb).any()):
-            #     print(bb)
-            #     input()
 
     class Critic(object):
         def __init__(self, sess, s_dim, decay_rate, decay_steps, critic_lr, stair=False):
@@ -404,7 +379,7 @@ class PPO_COM(object):
             loc=self.mu, scale=self.sigma + self.sigma_offset)
         return norm_dist
 
-    def learn(self, s, a, dc_r, old_prob, advantage, episode, sigma_offset):
+    def learn(self, s, a, dc_r, old_prob, advantage, episode, sigma_offset, **kargs):
         self.sess.run(self.train_op, feed_dict={
             self.s: s,
             self.a: a,
@@ -415,43 +390,43 @@ class PPO_COM(object):
             self.sigma_offset: sigma_offset
         })
 
-    def choose_action(self, s, sigma_offset):
+    def choose_action(self, s, sigma_offset, **kargs):
         return self.sess.run([self.prob, self.clip_action], feed_dict={
             self.s: s,
             self.sigma_offset: sigma_offset
         })
 
-    def choose_inference_action(self, s, sigma_offset):
+    def choose_inference_action(self, s, sigma_offset, **kargs):
         return self.sess.run([self.prob, self.clip_action], feed_dict={
             self.s: s,
             self.sigma_offset: sigma_offset
         })
 
-    def print_prob(self, s, a, sigma_offset):
+    def print_prob(self, s, a, sigma_offset, **kargs):
         print(self.sess.run(self.new_prob, feed_dict={
             self.s: s,
             self.a: a,
             self.sigma_offset: sigma_offset
         }))
 
-    def decay_lr(self, episode):
+    def decay_lr(self, episode, **kargs):
         return self.sess.run(self.lr, feed_dict={
             self.episode: episode
         })
 
-    def get_state_value(self, s, sigma_offset):
+    def get_state_value(self, s, sigma_offset, **kargs):
         return np.squeeze(self.sess.run(self.value, feed_dict={
             self.s: s,
             self.sigma_offset: sigma_offset
         }))
 
-    def get_entropy(self, s, sigma_offset):
+    def get_entropy(self, s, sigma_offset, **kargs):
         return self.sess.run(self.entropy, feed_dict={
             self.s: s,
             self.sigma_offset: sigma_offset
         })
 
-    def get_actor_loss(self, s, a, old_prob, advantage, sigma_offset):
+    def get_actor_loss(self, s, a, old_prob, advantage, sigma_offset, **kargs):
         return self.sess.run(self.actor_loss, feed_dict={
             self.s: s,
             self.a: a,
@@ -467,7 +442,7 @@ class PPO_COM(object):
             self.sigma_offset: sigma_offset
         })
 
-    def get_sigma(self, s, sigma_offset):
+    def get_sigma(self, s, sigma_offset, **kargs):
         return self.sess.run(self.sigma, feed_dict={
             self.s: s,
             self.sigma_offset: sigma_offset

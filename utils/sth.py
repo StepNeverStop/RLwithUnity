@@ -61,7 +61,7 @@ class sth(object):
             for i in reversed(range(length)):
                 for j in reversed(done_index):
                     if i == j:
-                        init_value =0
+                        init_value = 0
                 y.append(init_value * gamma + x[i] - z[i])
                 init_value = z[i]
         else:
