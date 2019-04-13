@@ -3,7 +3,7 @@ import platform
 from enum import Enum
 
 # judge the current operating system
-base = r'C:' if platform.system() == "Windows" else r'/data'
+base = r'C:' if platform.system() == "Windows" or platform.system() == "Darwin" else r'/data'
 
 env_list = [
     'RollerBall',
@@ -34,6 +34,8 @@ unity_file = [
     r'C:/UnityBuild/Boat/addTimePenalty/BoatTrain.exe'
 ]
 
+max_episode = 5.0e4  # max episode num or step num, depend on whether episode-update or step-update
+
 config = {
     'hyper parameters': {
         # set the temperature of SAC, auto adjust or not
@@ -54,7 +56,7 @@ config = {
         'decay_rate': 0.7,
         'decay_steps': 100,
         'stair': False,
-        'max_episode': 50000,
+        'max_episode': max_episode,
         'base_sigma': 0.1, # only work on stochastic policy
         'assign_interval': 4 # not use yet
     },
@@ -64,7 +66,7 @@ config = {
         'algorithm': algorithms.sac_no_v,
         'init_max_step': 300,
         'max_step': 2500,
-        'max_episode': 50000,
+        'max_episode': max_episode,
         'max_sample_time': 5,
         'till_all_done': True,
         'start_continuous_done': False,
@@ -92,7 +94,11 @@ config = {
         'dynamic_allocation': True,
         'reset_config': reset_config[1],
         # deprecated and not recommend, 'cause increase the agents number will conflict with the sample steps under the limit of fixed max_sample_time
-        'max_learn_time': None
+        'max_learn_time': None,
+        # some sets about using replay_buffer
+        'use_replay_buffer': False,
+        'buffer_size' : 1.0e4,
+        'buffer_batch_size': 100
     },
 
     'record config': {
