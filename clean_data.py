@@ -24,10 +24,10 @@ def clean(config):
                 print('remove LOG success.')
                 shutil.rmtree(cp_dir)
                 print('remove CHECKPOINT success.')
-                shutil.rmtree(excel_dir)
-                print('remove EXCEL success.')
                 shutil.rmtree(config_dir)
                 print('remove CONFIG success.')
+                shutil.rmtree(excel_dir)
+                print('remove EXCEL success.')
                 count += 1
             except Exception as e:
                 print(e)

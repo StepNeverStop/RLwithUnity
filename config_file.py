@@ -12,7 +12,7 @@ env_list = [
 ]
 
 reset_config = [None, {
-    'copy': 5
+    'copy': 10
 }]
 
 class algorithms(Enum):
@@ -55,7 +55,7 @@ config = {
         'decay_steps': 100,
         'stair': False,
         'max_episode': 50000,
-        'base_sigma': 0.01, # only work on stochastic policy
+        'base_sigma': 0.1, # only work on stochastic policy
         'assign_interval': 4 # not use yet
     },
 
@@ -89,7 +89,7 @@ config = {
         # checkpoint
         'save_frequency': 20,
         # set the agents' number and control mode
-        'dynamic_allocation': False,
+        'dynamic_allocation': True,
         'reset_config': reset_config[1],
         # deprecated and not recommend, 'cause increase the agents number will conflict with the sample steps under the limit of fixed max_sample_time
         'max_learn_time': None
@@ -103,7 +103,7 @@ config = {
         'config_basic_dir': r'C:/RLData/config/'.replace('C:',f'{base}'),
         'project_name': env_list[0],
         'remark': r'testSAV_NO_V',
-        'run_id': r'0',
+        'run_id': r'9',
         'logger2file' : False
     },
 
@@ -111,6 +111,6 @@ config = {
     'ps': r"",
 
     'clean_list': [
-
+        
     ]
 }
