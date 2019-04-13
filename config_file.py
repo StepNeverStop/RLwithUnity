@@ -103,7 +103,7 @@ config = {
         'config_basic_dir': r'C:/RLData/config/'.replace('C:',f'{base}'),
         'project_name': env_list[0],
         'remark': r'testSAV_NO_V',
-        'run_id': r'0',
+        'run_id': r'3',
         'logger2file' : False
     },
 
