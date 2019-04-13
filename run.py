@@ -124,6 +124,15 @@ def main():
                     hyper_config=hyper_config
                 )
                 logger.info('SAC initialize success.')
+            elif train_config['algorithm'] == config_file.algorithms.sac_no_v:
+                from sac.sac_no_v import SAC_NO_V
+                model = SAC_NO_V(
+                    sess=sess,
+                    s_dim=brain.vector_observation_space_size,
+                    a_counts=brain.vector_action_space_size[0],
+                    hyper_config=hyper_config
+                )
+                logger.info('SAC_NO_V initialize success.')
             elif train_config['algorithm'] == config_file.algorithms.ddpg:
                 from ddpg.ddpg import DDPG
                 model = DDPG(
@@ -388,8 +397,8 @@ def train(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_
         c_loss = np.array([model.get_critic_loss(
             s=data[f'{i}']['state'].values.tolist(),
             a=data[f'{i}']['action'].values.tolist(),
-            r=i_data['reward'].values[:,np.newaxis],
-            s_=i_data['next_state'].values.tolist(),
+            r=data[f'{i}']['reward'].values[:,np.newaxis],
+            s_=data[f'{i}']['next_state'].values.tolist(),
             dc_r=data[f'{i}']['discounted_reward'].values[:, np.newaxis],
             sigma_offset=sigma_offset
         ) for i in range(agents_num)]).mean()

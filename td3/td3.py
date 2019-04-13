@@ -155,12 +155,12 @@ class TD3(object):
         })
 
     def choose_action(self, s, **kargs):
-        return np.ones(s.shape), self.sess.run(self.action, feed_dict={
+        return np.ones((s.shape[0],self.a_counts)), self.sess.run(self.action, feed_dict={
             self.s: s
         })
 
     def choose_inference_action(self, s, **kargs):
-        return np.ones(s.shape), self.sess.run(self.mu, feed_dict={
+        return np.ones((s.shape[0],self.a_counts)), self.sess.run(self.mu, feed_dict={
             self.s: s
         })
 
@@ -197,7 +197,7 @@ class TD3(object):
         })
 
     def get_entropy(self, s, **kargs):
-        return np.zeros(np.array(s).shape)
+        return np.zeros(np.array(s).shape[0])
 
     def get_sigma(self, s, **kargs):
-        return np.zeros(np.array(s).shape)
+        return np.zeros(np.array(s).shape[0])

@@ -12,7 +12,7 @@ env_list = [
 ]
 
 reset_config = [None, {
-    'copy': 10
+    'copy': 5
 }]
 
 class algorithms(Enum):
@@ -20,8 +20,9 @@ class algorithms(Enum):
     ppo_com = 2  # AC, stochastic
     # boundary, about the way of calculate `discounted reward`
     sac = 3  # AC+Q, stochastic
-    ddpg = 4  # AC+Q, deterministic
-    td3 = 5  # AC+Q, deterministic
+    sac_no_v = 4
+    ddpg = 5  # AC+Q, deterministic
+    td3 = 6  # AC+Q, deterministic
 
 
 unity_file = [
@@ -60,7 +61,7 @@ config = {
 
     'train config': {
         # choose algorithm
-        'algorithm': algorithms.ddpg,
+        'algorithm': algorithms.sac_no_v,
         'init_max_step': 300,
         'max_step': 2500,
         'max_episode': 50000,
@@ -71,7 +72,7 @@ config = {
         'train': True,
         'unity_mode': False,
         'unity_file': unity_file[0].replace('C:',f'{base}'),
-        'port': 5001,
+        'port': 5006,
         # trick
         'use_trick': False,
         # excel
@@ -101,8 +102,8 @@ config = {
         'checkpoint_basic_dir': r'C:/RLData/models/'.replace('C:',f'{base}'),
         'config_basic_dir': r'C:/RLData/config/'.replace('C:',f'{base}'),
         'project_name': env_list[0],
-        'remark': r'testclean',
-        'run_id': r'',
+        'remark': r'testSAV_NO_V',
+        'run_id': r'0',
         'logger2file' : False
     },
 
