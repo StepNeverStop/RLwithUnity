@@ -63,9 +63,9 @@ config = {
 
     'train config': {
         # choose algorithm
-        'algorithm': algorithms.td3,
+        'algorithm': algorithms.sac,
         'init_max_step': 300,
-        'max_step': 2500, # use for both on-policy and off-policy, control the max step within one episode.
+        'max_step': 1000, # use for both on-policy and off-policy, control the max step within one episode.
         'max_episode': max_episode,
         'max_sample_time': 5,
         'till_all_done': True, # use for on-policy leanring
@@ -73,10 +73,10 @@ config = {
         # train mode, .exe or unity-client && train or inference
         'train': True,
         'unity_mode': False,
-        'unity_file': unity_file[0].replace('C:',f'{base}'),
-        'port': 5007,
+        'unity_file': unity_file[3].replace('C:',f'{base}'),
+        'port': 5006,
         # trick
-        'use_trick': False,
+        'use_trick': True,
         # excel
         'excel_record': False,
         'excel_record_frequency': 10,
@@ -95,8 +95,8 @@ config = {
         'reset_config': reset_config[1],
         # some sets about using replay_buffer
         'use_replay_buffer': True,
-        'buffer_size' : 10000,
-        'buffer_batch_size': 100,
+        'buffer_size' : 100000,
+        'buffer_batch_size': 1000,
         'max_learn_time' : 20
     },
 
@@ -106,9 +106,9 @@ config = {
         'excel_basic_dir': r'C:/RLData/excels/'.replace('C:',f'{base}'),
         'checkpoint_basic_dir': r'C:/RLData/models/'.replace('C:',f'{base}'),
         'config_basic_dir': r'C:/RLData/config/'.replace('C:',f'{base}'),
-        'project_name': env_list[0],
-        'remark': r'td3_test',
-        'run_id': r'2',
+        'project_name': env_list[2],
+        'remark': r'sac',
+        'run_id': r'0',
         'logger2file' : False
     },
 
