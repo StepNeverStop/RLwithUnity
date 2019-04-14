@@ -19,10 +19,10 @@ class algorithms(Enum):
     ppo_sep_ac = 1  # AC, stochastic
     ppo_com = 2  # AC, stochastic
     # boundary, about the way of calculate `discounted reward`
-    sac = 3  # AC+Q, stochastic
+    sac = 3  # AC+Q, stochastic, off-policy
     sac_no_v = 4
-    ddpg = 5  # AC+Q, deterministic
-    td3 = 6  # AC+Q, deterministic
+    ddpg = 5  # AC+Q, deterministic, off-policy
+    td3 = 6  # AC+Q, deterministic, off-policy
 
 
 unity_file = [
@@ -63,18 +63,18 @@ config = {
 
     'train config': {
         # choose algorithm
-        'algorithm': algorithms.sac_no_v,
+        'algorithm': algorithms.td3,
         'init_max_step': 300,
-        'max_step': 2500,
+        'max_step': 2500, # use for both on-policy and off-policy, control the max step within one episode.
         'max_episode': max_episode,
         'max_sample_time': 5,
-        'till_all_done': True,
+        'till_all_done': True, # use for on-policy leanring
         'start_continuous_done': False,
         # train mode, .exe or unity-client && train or inference
         'train': True,
         'unity_mode': False,
         'unity_file': unity_file[0].replace('C:',f'{base}'),
-        'port': 5006,
+        'port': 5007,
         # trick
         'use_trick': False,
         # excel
@@ -93,12 +93,11 @@ config = {
         # set the agents' number and control mode
         'dynamic_allocation': True,
         'reset_config': reset_config[1],
-        # deprecated and not recommend, 'cause increase the agents number will conflict with the sample steps under the limit of fixed max_sample_time
-        'max_learn_time': None,
         # some sets about using replay_buffer
         'use_replay_buffer': True,
         'buffer_size' : 10000,
-        'buffer_batch_size': 100
+        'buffer_batch_size': 100,
+        'max_learn_time' : 20
     },
 
     'record config': {
@@ -108,8 +107,8 @@ config = {
         'checkpoint_basic_dir': r'C:/RLData/models/'.replace('C:',f'{base}'),
         'config_basic_dir': r'C:/RLData/config/'.replace('C:',f'{base}'),
         'project_name': env_list[0],
-        'remark': r'buffertest',
-        'run_id': r'0',
+        'remark': r'td3_test',
+        'run_id': r'2',
         'logger2file' : False
     },
 

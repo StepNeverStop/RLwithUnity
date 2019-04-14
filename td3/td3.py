@@ -16,7 +16,7 @@ class TD3(object):
         self.sess = sess
         self.s_dim = s_dim
         self.a_counts = a_counts
-        self.activation_fn = tf.nn.relu
+        self.activation_fn = tf.nn.tanh
         self.action_bound = hyper_config['action_bound']
         self.assign_interval = hyper_config['assign_interval']
 
@@ -25,16 +25,17 @@ class TD3(object):
             hyper_config['lr'], self.episode, hyper_config['max_episode'], 1e-10, power=1.0)
         self.s = tf.placeholder(tf.float32, [None, self.s_dim], 'state')
         self.a = tf.placeholder(tf.float32, [None, self.a_counts], 'action')
-        self.dc_r = tf.placeholder(tf.float32, [None, 1], 'discounted_reward')
+        self.r = tf.placeholder(tf.float32, [None, 1], 'reward')
+        self.s_ = tf.placeholder(tf.float32, [None, self.s_dim], 'next_state')
 
         self.mu, self.action, self.actor_var = self._build_actor_net(
-            'actor', trainable=True)
+            'actor', self.s, trainable=True)
         self.target_mu, self.action_target, self.actor_target_var = self._build_actor_net(
-            'actor_target', trainable=False)
+            'actor_target', self.s_, trainable=False)
 
         self.s_a = tf.concat((self.s, self.a), axis=1)
         self.s_mu = tf.concat((self.s, self.mu), axis=1)
-        self.s_a_target = tf.concat((self.s, self.action_target), axis=1)
+        self.s_a_target = tf.concat((self.s_, self.action_target), axis=1)
 
         self.q1, self.q1_var = self._build_q_net(
             'q1', self.s_a, True, reuse=False)
@@ -48,6 +49,8 @@ class TD3(object):
             'q2_target', self.s_a_target, False, reuse=False)
 
         self.q_target = tf.minimum(self.q1_target, self.q2_target)
+        self.dc_r = tf.stop_gradient(
+            self.r + hyper_config['gamma'] * self.q_target)
 
         self.q1_loss = tf.reduce_mean(
             tf.squared_difference(self.q1, self.dc_r))
@@ -85,10 +88,10 @@ class TD3(object):
         # self.assign_actor_target = [
         #     tf.assign(r, 1/(self.episode+1) * v + (1-1/(self.episode+1)) * r) for r, v in zip(self.actor_target_var, self.actor_var)]
 
-    def _build_actor_net(self, name, trainable):
+    def _build_actor_net(self, name, input_vector, trainable):
         with tf.variable_scope(name):
             actor1 = tf.layers.dense(
-                inputs=self.s,
+                inputs=input_vector,
                 units=128,
                 activation=self.activation_fn,
                 name='actor1',
@@ -155,32 +158,35 @@ class TD3(object):
         })
 
     def choose_action(self, s, **kargs):
-        return np.ones((s.shape[0],self.a_counts)), self.sess.run(self.action, feed_dict={
+        return np.ones((s.shape[0], self.a_counts)), self.sess.run(self.action, feed_dict={
             self.s: s
         })
 
     def choose_inference_action(self, s, **kargs):
-        return np.ones((s.shape[0],self.a_counts)), self.sess.run(self.mu, feed_dict={
+        return np.ones((s.shape[0], self.a_counts)), self.sess.run(self.mu, feed_dict={
             self.s: s
         })
 
     def get_state_value(self, s, **kargs):
-        return np.squeeze(
-            self.sess.run(self.q_target, feed_dict={
-                self.s: s
-            }))
+        # return np.squeeze(
+        #     self.sess.run(self.q_target, feed_dict={
+        #         self.s: s
+        #     }))
+        return np.zeros(np.array(s).shape[0])
 
-    def learn(self, s, a, dc_r, episode, **kargs):
+    def learn(self, s, a, r, s_, episode, **kargs):
         self.sess.run(self.train_value, feed_dict={
             self.s: s,
             self.a: a,
-            self.dc_r: dc_r,
+            self.r: r,
+            self.s_: s_,
             self.episode: episode
         })
         self.sess.run([self.train_value, self.train_actor, self.assign_q1_target, self.assign_q2_target, self.assign_actor_target], feed_dict={
             self.s: s,
             self.a: a,
-            self.dc_r: dc_r,
+            self.r: r,
+            self.s_: s_,
             self.episode: episode
         })
 
@@ -189,15 +195,16 @@ class TD3(object):
             self.s: s
         })
 
-    def get_critic_loss(self, s, a, dc_r, **kargs):
+    def get_critic_loss(self, s, a, r, s_, **kargs):
         return self.sess.run(self.critic_loss, feed_dict={
             self.s: s,
             self.a: a,
-            self.dc_r: dc_r
+            self.r: r,
+            self.s_: s_,
         })
 
     def get_entropy(self, s, **kargs):
-        return np.zeros(np.array(s).shape[0])
+        return np.zeros((np.array(s).shape[0], self.a_counts))
 
     def get_sigma(self, s, **kargs):
-        return np.zeros(np.array(s).shape[0])
+        return np.zeros((np.array(s).shape[0], self.a_counts))

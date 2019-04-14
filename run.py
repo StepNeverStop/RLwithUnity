@@ -210,8 +210,8 @@ def train(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_
     base_agents_num = train_config['reset_config']['copy']
     sigma_offset = np.zeros(model.a_counts) + hyper_config['base_sigma']
     for episode in range(begin_episode, train_config['max_episode']):
-        recorder.logger.info('-' * 30 + str(episode) + ' ๑乛◡乛๑ '
-                             + train_config['algorithm'].name + '-' * 30)
+        recorder.logger.info('-' * 30 + str(episode) + ' ๑乛◡乛๑ ' +
+                             train_config['algorithm'].name + '-' * 30)
         if EXIT:
             return
         if(episode % train_config['save_frequency'] == 0):
@@ -375,14 +375,14 @@ def train(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_
                         i_data = data[f'{j}'].sample(
                             n=train_config['batchsize']) if train_config['batchsize'] < train_config['init_max_step'] else data[f'{j}']
                     else:
-                        i_data = data[f'{j}'].iloc[i:i +
-                                                   train_config['batchsize'], :]
+                        i_data = data[f'{j}'].iloc[i:i
+                                                   + train_config['batchsize'], :]
                     model.learn(
                         s=i_data['state'].values.tolist(),
                         a=i_data['action'].values.tolist(),
-                        r=i_data['reward'].values[:,np.newaxis],
+                        r=i_data['reward'].values[:, np.newaxis],
                         s_=i_data['next_state'].values.tolist(),
-                        dc_r=i_data['discounted_reward'].values[:,np.newaxis],
+                        dc_r=i_data['discounted_reward'].values[:, np.newaxis],
                         episode=episode,
                         sigma_offset=sigma_offset,
                         old_prob=i_data['old_prob'].values.tolist(),
@@ -392,8 +392,6 @@ def train(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_
         recorder.logger.info(f'learn cost time: {learn_time}')
 
         if train_config['dynamic_allocation']:
-            # train_config['reset_config']['copy'] += 1 if learn_time < train_config['max_learn_time'] else -1
-            # train_config['reset_config']['copy'] = 1 if train_config['reset_config']['copy'] == 0 else train_config['reset_config']['copy']
             train_config['reset_config']['copy'] += 1 if hits > (agents_num * 2 if train_config['start_continuous_done']
                                                                  else agents_num) else (-2 if train_config['reset_config']['copy'] > base_agents_num else 0)
 
@@ -408,7 +406,7 @@ def train(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_
         c_loss = np.array([model.get_critic_loss(
             s=data[f'{i}']['state'].values.tolist(),
             a=data[f'{i}']['action'].values.tolist(),
-            r=data[f'{i}']['reward'].values[:,np.newaxis],
+            r=data[f'{i}']['reward'].values[:, np.newaxis],
             s_=data[f'{i}']['next_state'].values.tolist(),
             dc_r=data[f'{i}']['discounted_reward'].values[:, np.newaxis],
             sigma_offset=sigma_offset
@@ -417,8 +415,8 @@ def train(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_
         ), sigma_offset=sigma_offset) for i in range(agents_num)]).mean(axis=0)
         sigma = np.array([model.get_sigma(s=data[f'{i}']['state'].values.tolist(
         ), sigma_offset=sigma_offset) for i in range(agents_num)]).mean(axis=0)
-        sigma_offset = np.array([np.log(c_loss + 1)]
-                                * model.a_counts) + hyper_config['base_sigma']
+        sigma_offset = np.array([np.log(c_loss + 1)] *
+                                model.a_counts) + hyper_config['base_sigma']
         end = time.time()
         recorder.logger.info(f'get statistics cost time: {end - start}')
 
@@ -441,6 +439,10 @@ def train(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_
             {
             'tag': 'REWARD/reward',
             'value': total_reward
+        },
+            {
+            'tag': 'REWARD/accuracy',
+            'value': hits / dones if dones else dones
         },
             {
             'tag': 'LEARNING_RATE/lr',
@@ -477,13 +479,15 @@ def train(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_
         recorder.logger.info('episede: {0} steps: {1} dc_reward: {2} reward: {3}'.format(
             episode, step, total_discounted_reward, total_reward))
 
+
 def train_with_buffer(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_config, train_config):
     base_agents_num = train_config['reset_config']['copy']
     sigma_offset = np.zeros(model.a_counts) + hyper_config['base_sigma']
-    buffer = ReplayBuffer(model.s_dim, model.a_counts, train_config['buffer_size'])
+    buffer = ReplayBuffer(model.s_dim, model.a_counts,
+                          train_config['buffer_size'])
     for episode in range(begin_episode, train_config['max_episode']):
-        recorder.logger.info('-' * 30 + str(episode) + ' ๑乛◡乛๑ '
-                             + train_config['algorithm'].name + '-' * 30)
+        recorder.logger.info('-' * 30 + str(episode) + ' ๑乛◡乛๑ ' +
+                             train_config['algorithm'].name + '-' * 30)
         if EXIT:
             return
         if(episode % train_config['save_frequency'] == 0):
@@ -494,7 +498,8 @@ def train_with_buffer(sess, env, brain_name, begin_episode, model, recorder, cp_
             recorder.logger.info(f'save checkpoint cost time: {end - start}')
         model_lr = model.decay_lr(episode)
         step = 0
-        obs = env.reset(config=train_config['reset_config'], train_mode=True)[brain_name]
+        obs = env.reset(config=train_config['reset_config'], train_mode=True)[
+            brain_name]
         agents_num = len(obs.agents)
         total_reward = np.zeros(agents_num)
         total_discounted_reward = np.zeros(agents_num)
@@ -521,7 +526,7 @@ def train_with_buffer(sess, env, brain_name, begin_episode, model, recorder, cp_
                     total_reward[i] += reward[i]
                     total_discounted_reward[i] += hyper_config['gamma'] * reward[i]
             state_ = obs.vector_observations
-            hits_flag+=np.int64(reward>0)
+            hits_flag += np.int64(reward > 0)
             dones_flag += obs.local_done
             dones_flag_sup += obs.local_done
             dc_r = reward + hyper_config['gamma'] * model.get_state_value(
@@ -542,18 +547,19 @@ def train_with_buffer(sess, env, brain_name, begin_episode, model, recorder, cp_
                     done=obs.local_done[i]
                 )
             if buffer.buffer_size >= train_config['buffer_size']:
-                data_from_buffer = buffer.sample_batch(train_config['buffer_batch_size'])
+                data_from_buffer = buffer.sample_batch(
+                    train_config['buffer_batch_size'])
                 model.learn(
-                        s=data_from_buffer['state'],
-                        a=data_from_buffer['action'],
-                        r=data_from_buffer['reward'][:,np.newaxis],
-                        s_=data_from_buffer['next_state'],
-                        dc_r=data_from_buffer['discounted_reward'][:,np.newaxis],
-                        episode=episode,
-                        sigma_offset=sigma_offset,
-                        old_prob=data_from_buffer['old_prob'],
-                        advantage=data_from_buffer['advantage'][:, np.newaxis]
-                    )
+                    s=data_from_buffer['state'],
+                    a=data_from_buffer['action'],
+                    r=data_from_buffer['reward'][:, np.newaxis],
+                    s_=data_from_buffer['next_state'],
+                    dc_r=data_from_buffer['discounted_reward'][:, np.newaxis],
+                    episode=episode,
+                    sigma_offset=sigma_offset,
+                    old_prob=data_from_buffer['old_prob'],
+                    advantage=data_from_buffer['advantage'][:, np.newaxis]
+                )
                 a_loss += model.get_actor_loss(
                     s=data_from_buffer['state'],
                     sigma_offset=sigma_offset,
@@ -564,26 +570,34 @@ def train_with_buffer(sess, env, brain_name, begin_episode, model, recorder, cp_
                 c_loss += model.get_critic_loss(
                     s=data_from_buffer['state'],
                     a=data_from_buffer['action'],
-                    r=data_from_buffer['reward'][:,np.newaxis],
+                    r=data_from_buffer['reward'][:, np.newaxis],
                     s_=data_from_buffer['next_state'],
                     dc_r=data_from_buffer['discounted_reward'][:, np.newaxis],
                     sigma_offset=sigma_offset
                 ).mean()
-                entropy += model.get_entropy(s=data_from_buffer['state'], sigma_offset=sigma_offset).mean(axis=1)
-                sigma += model.get_sigma(s=data_from_buffer['state'], sigma_offset=sigma_offset).mean(axis=1)
-            if train_config['till_all_done']:
-                if all(dones_flag) and all(dones_flag_sup):
-                    break
-            elif step >= train_config['init_max_step']:
+                entropy += model.get_entropy(
+                    s=data_from_buffer['state'], sigma_offset=sigma_offset).mean(axis=1)
+                sigma += model.get_sigma(
+                    s=data_from_buffer['state'], sigma_offset=sigma_offset).mean(axis=1)
+            if all(dones_flag) and all(dones_flag_sup) or step >= train_config['max_step']:
                 break
         a_loss /= step
         c_loss /= step
         entropy /= step
         sigma /= step
-        end = time.time()
-        sigma_offset = np.array([np.log(c_loss + 1)]
-                                * model.a_counts) + hyper_config['base_sigma']
+        learn_time = time.time() - start
+        recorder.logger.info('learn_time: {0}'.format(
+            learn_time))
+        sigma_offset = np.array([np.log(c_loss + 1)] *
+                                model.a_counts) + hyper_config['base_sigma']
 
+        dones, hits = np.sum(dones_flag), np.sum(hits_flag)
+        if dones:
+            recorder.logger.info(
+                f'#Agents Num#: {agents_num} \ttotal_dones: {dones} \ttotal_hits: {hits} \tratio: {hits/dones:.2%}')
+        else:
+            recorder.logger.info(
+                f'#Agents Num#: {agents_num} \tOMG! ALL AGENTS NO DONE.')
         writer_summary(recorder.writer, episode, [{
             'tag': 'TIME/steps',
             'value': step
@@ -599,6 +613,10 @@ def train_with_buffer(sess, env, brain_name, begin_episode, model, recorder, cp_
             {
             'tag': 'REWARD/reward',
             'value': total_reward.mean()
+        },
+            {
+            'tag': 'REWARD/accuracy',
+            'value': hits / dones if dones else dones
         },
             {
             'tag': 'LEARNING_RATE/lr',
@@ -628,22 +646,13 @@ def train_with_buffer(sess, env, brain_name, begin_episode, model, recorder, cp_
             'tag': 'PARAMETERS/sigma',
             'value': sigma.max()
         }])
-        dones,hits=np.sum(dones_flag),np.sum(hits_flag)
-        if dones:
-            recorder.logger.info(
-                f'#Agents Num#: {agents_num} \ttotal_dones: {dones} \ttotal_hits: {hits} \tratio: {hits/dones:.2%}')
-        else:
-            recorder.logger.info(
-                f'#Agents Num#: {agents_num} \tOMG! ALL AGENTS NO DONE.')
         recorder.logger.info('episede: {0} steps: {1} dc_reward: {2} reward: {3}\n'.format(
             episode, step, total_discounted_reward.mean(), total_reward.mean()))
 
         if train_config['dynamic_allocation']:
-            # train_config['reset_config']['copy'] += 1 if learn_time < train_config['max_learn_time'] else -1
-            # train_config['reset_config']['copy'] = 1 if train_config['reset_config']['copy'] == 0 else train_config['reset_config']['copy']
-            train_config['reset_config']['copy'] += 1 if hits > (agents_num * 2 if train_config['start_continuous_done']
-                                                                 else agents_num) else (-2 if train_config['reset_config']['copy'] > base_agents_num else 0)
-        
+            train_config['reset_config']['copy'] += 1 if (hits > (agents_num * 2 if train_config['start_continuous_done']
+                                                                  else agents_num)) and learn_time < train_config['max_learn_time'] else (-2 if train_config['reset_config']['copy'] > base_agents_num else 0)
+
 
 def init_or_restore(dicfile, sess, recorder, cp_file):
     if os.path.exists(dicfile + '/checkpoint'):
@@ -717,7 +726,8 @@ def create_logger(name, console_level, console_format, logger2file, file_name, f
     logger = logging.Logger(name)
     logger.setLevel(level=console_level)
     stdout_handle = logging.StreamHandler(stream=sys.stdout)
-    stdout_handle.setFormatter(logging.Formatter(console_format if console_level>20 else '%(message)s'))
+    stdout_handle.setFormatter(logging.Formatter(
+        console_format if console_level > 20 else '%(message)s'))
     logger.addHandler(stdout_handle)
     if logger2file:
         logfile_handle = logging.FileHandler(file_name)
