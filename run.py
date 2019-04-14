@@ -157,7 +157,7 @@ def main():
             episode = init_or_restore(cp_dir, sess, recorder, cp_file)
             try:
                 if train_config['train']:
-                    train(
+                    train_OffPolicy(
                         sess=sess,
                         env=env,
                         brain_name=brain_name,
@@ -167,7 +167,7 @@ def main():
                         cp_file=cp_file,
                         hyper_config=hyper_config,
                         train_config=train_config
-                    ) if not train_config['use_replay_buffer'] else train_with_buffer(
+                    ) if not train_config['use_replay_buffer'] else train_OnPolicy(
                         sess=sess,
                         env=env,
                         brain_name=brain_name,
@@ -206,7 +206,7 @@ def inference(env, brain_name, model, train_config):
                 return
 
 
-def train(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_config, train_config):
+def train_OffPolicy(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_config, train_config):
     base_agents_num = train_config['reset_config']['copy']
     sigma_offset = np.zeros(model.a_counts) + hyper_config['base_sigma']
     for episode in range(begin_episode, train_config['max_episode']):
@@ -480,7 +480,7 @@ def train(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_
             episode, step, total_discounted_reward, total_reward))
 
 
-def train_with_buffer(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_config, train_config):
+def train_OnPolicy(sess, env, brain_name, begin_episode, model, recorder, cp_file, hyper_config, train_config):
     base_agents_num = train_config['reset_config']['copy']
     sigma_offset = np.zeros(model.a_counts) + hyper_config['base_sigma']
     buffer = ReplayBuffer(model.s_dim, model.a_counts,
