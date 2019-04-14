@@ -506,7 +506,8 @@ def train_with_buffer(sess, env, brain_name, begin_episode, model, recorder, cp_
         if not train_config['use_trick']:
             sigma_offset = np.zeros(model.a_counts) + \
                 hyper_config['base_sigma']
-        a_loss = c_loss = entropy = sigma = 0
+        a_loss = c_loss = 0
+        entropy = sigma = np.zeros(train_config['buffer_batch_size'])
         start = time.time()
         while True:
             state = state_
@@ -514,29 +515,29 @@ def train_with_buffer(sess, env, brain_name, begin_episode, model, recorder, cp_
                 s=state, sigma_offset=sigma_offset)
             obs = env.step(action)[brain_name]
             step += 1
-            reward = obs.rewards
-            for i in range(agent_num):
+            reward = np.array(obs.rewards)
+            for i in range(agents_num):
                 if dones_flag[i] == 0:
                     total_reward[i] += reward[i]
-                    total_discounted_reward[i] += train_config['gamma'] * reward[i]
+                    total_discounted_reward[i] += hyper_config['gamma'] * reward[i]
             state_ = obs.vector_observations
-            hits_flag+=np.sign(reward)
+            hits_flag+=np.int64(reward>0)
             dones_flag += obs.local_done
             dones_flag_sup += obs.local_done
-            dc_r = reward + train_config['gamma'] * model.get_state_value(
+            dc_r = reward + hyper_config['gamma'] * model.get_state_value(
                 s=state_, sigma_offset=sigma_offset)
             td_error = dc_r - model.get_state_value(
                 s=state, sigma_offset=sigma_offset)
             advantage = np.zeros(agents_num)
             for i in range(agents_num):
                 buffer.store(
-                    s=state[i],
-                    a=action[i],
+                    state=state[i],
+                    action=action[i],
                     prob=prob[i],
                     reward=reward[i],
                     discounted_reward=dc_r[i],
                     td_error=td_error[i],
-                    s_=state_[i],
+                    next_state=state_[i],
                     advantage=advantage[i],
                     done=obs.local_done[i]
                 )
@@ -568,14 +569,13 @@ def train_with_buffer(sess, env, brain_name, begin_episode, model, recorder, cp_
                     dc_r=data_from_buffer['discounted_reward'][:, np.newaxis],
                     sigma_offset=sigma_offset
                 ).mean()
-                entropy += model.get_entropy(s=data_from_buffer['state'], sigma_offset=sigma_offset)
-                sigma += model.get_sigma(s=data_from_buffer['state'], sigma_offset=sigma_offset)
-
-                if train_config['till_all_done']:
-                    if all(dones_flag) and all(dones_flag_sup):
-                        break
-                elif step >= train_config['init_max_step']:
+                entropy += model.get_entropy(s=data_from_buffer['state'], sigma_offset=sigma_offset).mean(axis=1)
+                sigma += model.get_sigma(s=data_from_buffer['state'], sigma_offset=sigma_offset).mean(axis=1)
+            if train_config['till_all_done']:
+                if all(dones_flag) and all(dones_flag_sup):
                     break
+            elif step >= train_config['init_max_step']:
+                break
         a_loss /= step
         c_loss /= step
         entropy /= step
@@ -635,8 +635,8 @@ def train_with_buffer(sess, env, brain_name, begin_episode, model, recorder, cp_
         else:
             recorder.logger.info(
                 f'#Agents Num#: {agents_num} \tOMG! ALL AGENTS NO DONE.')
-        recorder.logger.info('episede: {0} steps: {1} dc_reward: {2} reward: {3}'.format(
-            episode, step, total_discounted_reward, total_reward))
+        recorder.logger.info('episede: {0} steps: {1} dc_reward: {2} reward: {3}\n'.format(
+            episode, step, total_discounted_reward.mean(), total_reward.mean()))
 
         if train_config['dynamic_allocation']:
             # train_config['reset_config']['copy'] += 1 if learn_time < train_config['max_learn_time'] else -1

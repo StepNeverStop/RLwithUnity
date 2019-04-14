@@ -34,7 +34,7 @@ unity_file = [
     r'C:/UnityBuild/Boat/addTimePenalty/BoatTrain.exe'
 ]
 
-max_episode = 5.0e4  # max episode num or step num, depend on whether episode-update or step-update
+max_episode = 50000  # max episode num or step num, depend on whether episode-update or step-update
 
 config = {
     'hyper parameters': {
@@ -96,8 +96,8 @@ config = {
         # deprecated and not recommend, 'cause increase the agents number will conflict with the sample steps under the limit of fixed max_sample_time
         'max_learn_time': None,
         # some sets about using replay_buffer
-        'use_replay_buffer': False,
-        'buffer_size' : 1.0e4,
+        'use_replay_buffer': True,
+        'buffer_size' : 10000,
         'buffer_batch_size': 100
     },
 
@@ -108,8 +108,8 @@ config = {
         'checkpoint_basic_dir': r'C:/RLData/models/'.replace('C:',f'{base}'),
         'config_basic_dir': r'C:/RLData/config/'.replace('C:',f'{base}'),
         'project_name': env_list[0],
-        'remark': r'testSAV_NO_V',
-        'run_id': r'3',
+        'remark': r'buffertest',
+        'run_id': r'0',
         'logger2file' : False
     },
 
