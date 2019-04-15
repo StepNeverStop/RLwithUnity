@@ -149,7 +149,7 @@ class DDPG(object):
         })
 
     def get_state_value(self, s, **kargs):
-        return np.zeros(np.array(s).shape[0])
+        return np.squeeze(np.zeros(np.array(s).shape[0]))
 
     def learn(self, s, a, r, s_, episode, **kargs):
         self.sess.run([self.train_q, self.train_actor, self.assign_q_target, self.assign_actor_target], feed_dict={

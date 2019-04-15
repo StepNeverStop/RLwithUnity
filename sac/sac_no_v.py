@@ -202,7 +202,7 @@ class SAC_NO_V(object):
         })
 
     def get_state_value(self, s, sigma_offset, **kargs):
-        return np.zeros(np.array(s).shape[0])
+        return np.squeeze(np.zeros(np.array(s).shape[0]))
 
     def learn(self, s, a, r, s_, episode, sigma_offset, **kargs):
         # self.sess.run([self.train_q1, self.train_q2, self.train_actor, self.train_alpha, self.assign_q1_target, self.assign_q2_target], feed_dict={

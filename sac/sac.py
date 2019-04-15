@@ -217,7 +217,7 @@ class SAC(object):
         })
 
     def get_state_value(self, s, sigma_offset, **kargs):
-        return np.zeros(np.array(s).shape[0])
+        return np.squeeze(np.zeros(np.array(s).shape[0]))
 
     def learn(self, s, a, r, s_, episode, sigma_offset, **kargs):
         # self.sess.run([self.assign_v_target, self.train_q1, self.train_q2, self.train_v, self.train_actor], feed_dict={

@@ -172,7 +172,7 @@ class TD3(object):
         #     self.sess.run(self.q_target, feed_dict={
         #         self.s: s
         #     }))
-        return np.zeros(np.array(s).shape[0])
+        return np.squeeze(np.zeros(np.array(s).shape[0]))
 
     def learn(self, s, a, r, s_, episode, **kargs):
         self.sess.run(self.train_value, feed_dict={
