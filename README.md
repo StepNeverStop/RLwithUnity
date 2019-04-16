@@ -4,7 +4,7 @@ This project include some state-of-art or classic RL(reinforcement learning) alg
 
 The Algorithms in this repository are writed totally separated, 'cause I want each algorithm being different with others, what I mean is that I just wanna each algorithm has its own `.py` file and don't have to switch to another file to find out the implementation which one may confused. And those algorithms will never be encapsulated into a base algorithm model.
 
-This framework implements training mechanism conversion between On-Policy and Off-Policy for Actor-Critic architecture algorithms. Just need to set the value of varibale `use_replay_buffer` in `config_file.py`.
+This framework implements training mechanism conversion between On-Policy and Off-Policy for Actor-Critic architecture algorithms. Just need to set the value of varibable `use_replay_buffer` in `config_file.py`(True for off-policy and False for on-policy).
 
 I am very appreciate to my best friend - [BlueFisher](https://github.com/BlueFisher) - who always look down on my coding style and competence(Although he **is** right, at least for now, but will be **was**).
 
