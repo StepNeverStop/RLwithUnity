@@ -12,7 +12,9 @@ initKernelAndBias = {
 
 
 class PPO_SEP(object):
-    def __init__(self, sess, s_dim, a_counts, hyper_config, action_bound, epsilon, actor_lr, critic_lr, decay_steps, decay_rate=0.95, stair=False):
+    def __init__(self, sess, s_dim, a_counts, hyper_config):
+        self.s_dim=s_dim
+        self.a_counts=a_counts
         self.actor = self.Actor(
             sess=sess,
             s_dim=s_dim,
@@ -36,29 +38,29 @@ class PPO_SEP(object):
     def decay_lr(self, episode, **kargs):
         return self.actor.actor_decay_lr(episode)
 
-    def choose_action(self, state, **kargs):
-        return self.actor.choose_action(state)
+    def choose_action(self, s, sigma_offset, **kargs):
+        return self.actor.choose_action(s, sigma_offset)
 
-    def choose_inference_action(self, state, **kargs):
-        return self.actor.choose_inference_action(state)
+    def choose_inference_action(self, s, sigma_offset, **kargs):
+        return self.actor.choose_inference_action(s, sigma_offset)
 
-    def get_actor_loss(self, s, a, old_prob, advantage, **kargs):
-        return self.actor.get_actor_loss(s, a, old_prob, advantage)
+    def get_actor_loss(self, s, a, old_prob, advantage, sigma_offset, **kargs):
+        return self.actor.get_actor_loss(s, a, old_prob, advantage, sigma_offset)
 
-    def get_entropy(self, s, **kargs):
-        return self.actor.get_entropy(s)
+    def get_entropy(self, s, sigma_offset, **kargs):
+        return self.actor.get_entropy(s, sigma_offset)
 
-    def get_sigma(self, s, **kargs):
-        return self.actor.get_sigma(s)
+    def get_sigma(self, s, sigma_offset, **kargs):
+        return self.actor.get_sigma(s, sigma_offset)
 
-    def get_state_value(self, state, **kargs):
-        return self.critic.get_state_value(state)
+    def get_state_value(self, s, **kargs):
+        return self.critic.get_state_value(s)
 
     def get_critic_loss(self, s, dc_r, **kargs):
         return self.critic.get_critic_loss(s, dc_r)
 
-    def learn(self, s, a, dc_r, old_prob, advantage, episode, **kargs):
-        self.actor.learn(s, a, old_prob, advantage, episode)
+    def learn(self, s, a, dc_r, old_prob, advantage, episode, sigma_offset, **kargs):
+        self.actor.learn(s, a, old_prob, advantage, episode, sigma_offset)
         self.critic.learn(s, dc_r, episode)
 
     class Actor(object):
@@ -73,6 +75,8 @@ class PPO_SEP(object):
             self.advantage = tf.placeholder(tf.float32, [None, 1], "advantage")
             self.old_prob = tf.placeholder(
                 tf.float32, [None, self.a_counts], 'old_prob')
+            self.sigma_offset = tf.placeholder(
+                tf.float32, [self.a_counts, ], 'sigma_offset')
             self.episode = tf.Variable(tf.constant(0))
 
             self.norm_dist = self._build_actor_net('ActorNet', trainable=True)
@@ -132,50 +136,57 @@ class PPO_SEP(object):
                     inputs=layer2,
                     units=self.a_counts,
                     activation=tf.nn.softplus,
-                    name='delta',
+                    name='sigma',
                     **initKernelAndBias,
                     trainable=trainable
                 )
                 norm_dist = tf.distributions.Normal(
-                    loc=self.mu, scale=self.sigma + .1)
+                    loc=self.mu, scale=self.sigma + self.sigma_offset)
                 # var = tf.get_variable_scope().global_variables()
                 return norm_dist
 
-        def choose_action(self, s):
-            return self.sess.run([self.clip_action, self.prob], feed_dict={
-                self.s: s
+        def choose_action(self, s, sigma_offset):
+            return self.sess.run([self.prob, self.clip_action], feed_dict={
+                self.s: s,
+                self.sigma_offset: sigma_offset
             })  # clip action to aviod the action value choosed is too large to cause 'nan' value
 
-        def choose_inference_action(self, s):
-            return self.sess.run([self.clip_action, self.prob], feed_dict={
-                self.s: s
+        def choose_inference_action(self, s, sigma_offset):
+            return self.sess.run([self.prob, self.clip_action], feed_dict={
+                self.s: s,
+                self.sigma_offset: sigma_offset
             })
 
-        def get_entropy(self, s):
+        def get_entropy(self, s, sigma_offset):
             return self.sess.run(self.entropy, feed_dict={
-                self.s: s
+                self.s: s,
+                self.sigma_offset: sigma_offset
             })
 
-        def get_actor_loss(self, s, a, old_prob, advantage):
+        def get_actor_loss(self, s, a, old_prob, advantage, sigma_offset):
             return self.sess.run(self.actor_loss, feed_dict={
                 self.s: s,
                 self.a: a,
                 self.old_prob: old_prob,
-                self.advantage: advantage
+                self.advantage: advantage,
+                self.sigma_offset: sigma_offset
             })
 
-        def learn(self, s, a, old_prob, advantage, episode):
+        def learn(self, s, a, old_prob, advantage, episode, sigma_offset):
             return self.sess.run(self.train_op, feed_dict={
                 self.s: s,
                 self.a: a,
                 self.old_prob: old_prob,
                 self.advantage: advantage,
-                self.episode: episode
+                self.episode: episode,
+                self.sigma_offset: sigma_offset
             })
 
-        def get_sigma(self, s):
+        def get_sigma(self, s, sigma_offset):
             return self.sess.run(self.sigma, feed_dict={
-                self.s: s
+                self.s: s,
+
+                self.sigma_offset: sigma_offset
             })
 
         def actor_decay_lr(self, episode):
