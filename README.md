@@ -1,8 +1,6 @@
 # RLwithUnity
 
-This project include some state-of-art or classic RL(reinforcement learning) algorithms used for training agents by interactive with Unity through [ml-agents](https://github.com/Unity-Technologies/ml-agents) v0.6.0.
-
-Although the newest version of this plugin(ml-agents) is now v0.7.0, I think there is little difference between v0.6.0 and v0.7.0, Maybe when v0.8.0 is released, I will update this plugin in this project.
+This project include some state-of-art or classic RL(reinforcement learning) algorithms used for training agents by interactive with Unity through [ml-agents](https://github.com/Unity-Technologies/ml-agents) v0.8.1.
 
 The Algorithms in this repository are writed totally separated, 'cause I want each algorithm being different with others, what I mean is that I just wanna each algorithm has its own `.py` file and don't have to switch to another file to find out the implementation which one may confused. And those algorithms will never be encapsulated into a base algorithm model.
 
