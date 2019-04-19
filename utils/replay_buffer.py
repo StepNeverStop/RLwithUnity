@@ -10,9 +10,10 @@ class ReplayBuffer(object):
         self.prob = np.zeros([buffer_size, a_counts], dtype=np.float32)
         self.reward = np.zeros(buffer_size, dtype=np.float32)
         self.discounted_reward = np.zeros(buffer_size, dtype=np.float32)
-        self.sum_tree_n = np.int32(np.ceil(np.log2(buffer_size)))+1
+        self.sum_tree_n = np.int32(np.ceil(np.log2(buffer_size))) + 1
         if self.use_priority:
-            self.td_error = [np.zeros(np.int32(np.ceil(buffer_size/np.power(2, i)))) for i in range(self.sum_tree_n)]
+            self.td_error = [np.zeros(np.int32(
+                np.ceil(buffer_size / np.power(2, i)))) for i in range(self.sum_tree_n)]
         else:
             self.td_error = np.zeros(buffer_size, dtype=np.float32)
         self.advantage = np.zeros(buffer_size, dtype=np.float32)
@@ -27,7 +28,8 @@ class ReplayBuffer(object):
         self.reward[self.now] = reward
         self.discounted_reward[self.now] = discounted_reward
         if self.use_priority:
-            diff = np.abs(td_error) - self.td_error[0][self.now]
+            diff = (np.abs(td_error) if np.abs(td_error) > np.max(
+                self.td_error[0]) else np.max(self.td_error[0]) + 1) - self.td_error[0][self.now]
             for i in range(self.sum_tree_n):
                 self.td_error[i][self.now // np.power(2, i)] += diff
         else:
@@ -39,28 +41,31 @@ class ReplayBuffer(object):
 
     def sample_batch(self, batch_size=32):
         if self.use_priority:
-            temp_indexs = np.random.random_sample(batch_size) * self.td_error[-1][0]
+            temp_indexs = np.random.random_sample(
+                batch_size) * self.td_error[-1][0]
             indexs = np.zeros(batch_size, dtype=np.int32)
             for index, i in enumerate(temp_indexs):
                 k = 0
-                for j in reversed(range(self.sum_tree_n-1)):
-                    k*=2
+                for j in reversed(range(self.sum_tree_n - 1)):
+                    k *= 2
                     if self.td_error[j][k] < i:
-                        i-=self.td_error[j][k]
-                        k+=1
+                        i -= self.td_error[j][k]
+                        k += 1
                 indexs[index] = k
         else:
             indexs = np.random.randint(0, self.buffer_size, size=batch_size)
-        return dict(state=self.state[indexs],
+        return indexs, dict(state=self.state[indexs],
                     next_state=self.next_state[indexs],
                     action=self.action[indexs],
                     old_prob=self.prob[indexs],
                     reward=self.reward[indexs],
                     discounted_reward=self.discounted_reward[indexs],
                     td_error=self.td_error[0][indexs] if self.use_priority else self.td_error[indexs],
+                    weights=np.power(self.td_error[-1][0] / (self.buffer_size * self.td_error[0][indexs]), 0.04) / np.max(
+                        self.td_error[0]) if self.use_priority else np.zeros(batch_size),
                     advantage=self.advantage[indexs],
                     done=self.done[indexs])
-    
+
     def update(self, indexs, td_error):
         for i, j in zip(indexs, td_error):
             if self.use_priority:
