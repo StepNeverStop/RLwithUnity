@@ -60,3 +60,12 @@ class ReplayBuffer(object):
                     td_error=self.td_error[0][indexs] if self.use_priority else self.td_error[indexs],
                     advantage=self.advantage[indexs],
                     done=self.done[indexs])
+    
+    def update(self, indexs, td_error):
+        for i, j in zip(indexs, td_error):
+            if self.use_priority:
+                diff = np.abs(j) - self.td_error[0][i]
+                for k in range(self.sum_tree_n):
+                    self.td_error[k][i // np.power(2, k)] += diff
+            else:
+                self.td_error[i] = td_error
