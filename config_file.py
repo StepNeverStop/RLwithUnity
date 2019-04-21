@@ -72,8 +72,8 @@ config = {
         'till_all_done': True, # use for on-policy leanring
         'start_continuous_done': False,
         # train mode, .exe or unity-client && train or inference
-        'train': True,
-        'unity_mode': False,
+        'train': False,
+        'unity_mode': True,
         'unity_file': unity_file[6].replace('C:',f'{base}'),
         'port': 5007,
         # trick
@@ -109,7 +109,7 @@ config = {
         'checkpoint_basic_dir': r'C:/RLData/models/'.replace('C:',f'{base}'),
         'config_basic_dir': r'C:/RLData/config/'.replace('C:',f'{base}'),
         'project_name': env_list[2],
-        'remark': r'ppo_com_no_border',
+        'remark': r'ppo_com_trick_no_border',
         'run_id': r'0',
         'logger2file' : False
     },
