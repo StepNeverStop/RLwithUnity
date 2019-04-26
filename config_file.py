@@ -26,7 +26,7 @@ class algorithms(Enum):
 
 
 unity_file = [
-    r'C:/UnityBuild/RollerBall/custom/RollerBall-custom.exe',#0
+    r'C:/UnityBuild/RollerBall/OneFloor/RollerBall-custom.exe',#0
     r'3dball',#1
     r'C:/UnityBuild/Boat/first/BoatTrain.exe',#2
     r'C:/UnityBuild/Boat/second/BoatTrain.exe',#3
@@ -64,7 +64,7 @@ config = {
 
     'train config': {
         # choose algorithm
-        'algorithm': algorithms.ppo_com,
+        'algorithm': algorithms.sac,
         'init_max_step': 300,
         'max_step': 1000, # use for both on-policy and off-policy, control the max step within one episode.
         'max_episode': max_episode,
@@ -72,10 +72,10 @@ config = {
         'till_all_done': True, # use for on-policy leanring
         'start_continuous_done': False,
         # train mode, .exe or unity-client && train or inference
-        'train': False,
-        'unity_mode': True,
-        'unity_file': unity_file[6].replace('C:',f'{base}'),
-        'port': 5007,
+        'train': True,
+        'unity_mode': False,
+        'unity_file': unity_file[0].replace('C:',f'{base}'),
+        'port': 5006,
         # trick
         'use_trick': True,
         # excel
@@ -95,10 +95,10 @@ config = {
         'dynamic_allocation': True,
         'reset_config': reset_config[1],
         # some sets about using replay_buffer
-        'use_replay_buffer': False, # on-policy or off-policy
+        'use_replay_buffer': True, # on-policy or off-policy
         'use_priority' : False,
-        'buffer_size' : 100000,
-        'buffer_batch_size': 1000,
+        'buffer_size' : 10000,
+        'buffer_batch_size': 100,
         'max_learn_time' : 20
     },
 
@@ -108,18 +108,21 @@ config = {
         'excel_basic_dir': r'C:/RLData/excels/'.replace('C:',f'{base}'),
         'checkpoint_basic_dir': r'C:/RLData/models/'.replace('C:',f'{base}'),
         'config_basic_dir': r'C:/RLData/config/'.replace('C:',f'{base}'),
-        'project_name': env_list[2],
-        'remark': r'ppo_com_trick_no_border',
-        'run_id': r'0',
+        'project_name': env_list[0],
+        'remark': r'sac_onefloor',
+        'run_id': r'3',
         'logger2file' : False
     },
 
     'config_file': r"",
-    'ps': r"decision interval = 10, time penalty=-0.01",
+    'ps': r"time penalty=-0.01",
 
     'clean_list': [
         r'Boat\sac_off_no_border0',
         r'Boat\sac_off_no_border1',
         r'Boat\sac_off_no_border2',
+        r'RollerBall\sac_onefloor0',
+        r'RollerBall\sac_onefloor1',
+        r'RollerBall\sac_onefloor2',
     ]
 }

@@ -164,7 +164,7 @@ def main():
             sess.run(tf.global_variables_initializer())
             try:
                 if train_config['train']:
-                    train_OffPolicy(
+                    train_OnPolicy(
                         sess=sess,
                         env=env,
                         brain_name=brain_name,
@@ -172,7 +172,7 @@ def main():
                         model=model,
                         hyper_config=hyper_config,
                         train_config=train_config
-                    ) if not train_config['use_replay_buffer'] else train_OnPolicy(
+                    ) if not train_config['use_replay_buffer'] else train_OffPolicy(
                         sess=sess,
                         env=env,
                         brain_name=brain_name,
@@ -205,7 +205,7 @@ def inference(env, brain_name, model, train_config):
                 return
 
 
-def train_OffPolicy(sess, env, brain_name, begin_episode, model, hyper_config, train_config):
+def train_OnPolicy(sess, env, brain_name, begin_episode, model, hyper_config, train_config):
     sigma_offset = np.zeros(model.a_counts) + hyper_config['base_sigma']
     for episode in range(begin_episode, train_config['max_episode']):
         print('-' * 30 + str(episode) + ' ๑乛◡乛๑ ' +
@@ -346,7 +346,7 @@ def train_OffPolicy(sess, env, brain_name, begin_episode, model, hyper_config, t
             episode, step, total_discounted_reward, total_reward))
 
 
-def train_OnPolicy(sess, env, brain_name, begin_episode, model, hyper_config, train_config):
+def train_OffPolicy(sess, env, brain_name, begin_episode, model, hyper_config, train_config):
     sigma_offset = np.zeros(model.a_counts) + hyper_config['base_sigma']
     buffer = ReplayBuffer(model.s_dim, model.a_counts,
                           train_config['buffer_size'], train_config['use_priority'])

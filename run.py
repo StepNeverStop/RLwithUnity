@@ -696,7 +696,7 @@ def export_model(cp_dir, graph):
             clear_devices=True, initializer_nodes='', input_saver='',
             restore_op_name='save/restore_all',
             filename_tensor_name='save/Const:0')
-    # tf2bc.convert(cp_dir + '/frozen_graph_def.pb', cp_dir + '.nn')
+    tf2bc.convert(cp_dir + '/frozen_graph_def.pb', cp_dir + '.nn')
 
 
 def _process_graph(graph):
